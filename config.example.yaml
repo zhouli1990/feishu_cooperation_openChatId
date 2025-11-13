@@ -1,0 +1,43 @@
+# 配置示例（请复制为 config.yaml 并填写实际值）
+# 说明：所有配置项均附中文注释，运行时由程序读取并校验。
+
+files:
+  # 输入TXT文件路径（UTF-8，一行一个 contract_number；支持空行与以#开头的注释）
+  input_txt: ./input/contracts.txt
+  # 输出Excel文件路径（程序会自动创建目录与文件）
+  output_excel: ./output/contract_openChatId.xlsx
+  # 日志文件路径（程序会自动创建目录与文件）
+  log_file: ./logs/run.log
+
+auth:
+  # 飞书应用的 app_id（用于获取 tenant_access_token）
+  app_id: ""
+  # 飞书应用的 app_secret（用于获取 tenant_access_token）
+  app_secret: ""
+  cookies:
+    # CLM 域接口所需的浏览器会话 Cookie：session（仅用于 contract.feishu.cn 域）
+    session: ""
+
+rate_limit:
+  # 全局 QPM（每分钟请求数上限），所有请求都会受此限制
+  global_qpm: 60
+  # OpenAPI：合同搜索接口 QPM
+  contract_search_qpm: 60
+  # CLM：合同详情（contractAndTask）接口 QPM
+  contract_info_qpm: 60
+  # CLM：协同详情（cooperation/info）接口 QPM
+  cooperation_info_qpm: 60
+  # 跨合同并发度（单合同内部始终串行），建议起步为 1
+  concurrency: 1
+
+retry:
+  # 单次 HTTP 请求超时时间（毫秒）
+  timeout_ms: 8000
+  # 最大重试次数（仅对可重试错误：429、5xx、网络超时等生效）
+  max_retries: 3
+  # 指数退避的基础延迟（毫秒）
+  base_delay_ms: 500
+  # 重试的最大延迟（毫秒，上限）
+  max_delay_ms: 10000
+  # 抖动比例（0~1，用于避免雪崩效应）
+  jitter: 0.2
