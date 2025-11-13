@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
+
+from .models import Status
 
 
 def _merge_defaults(user: Dict[str, Any], defaults: Dict[str, Any]) -> Dict[str, Any]:
@@ -48,10 +50,29 @@ def _validate(cfg: Dict[str, Any]) -> None:
     if not isinstance(rt.get("jitter"), (int, float)) or not (0 <= float(rt.get("jitter")) <= 1):
         raise ValueError("jitter 需在 [0,1] 范围内")
 
+    skip_statuses = rt.get("skip_result_statuses")
+    if not isinstance(skip_statuses, list):
+        raise ValueError("skip_result_statuses 必须为字符串列表")
+    invalid: List[str] = []
+    for item in skip_statuses:
+        if not isinstance(item, str):
+            raise ValueError("skip_result_statuses 中的元素必须为字符串")
+        try:
+            Status(item)
+        except ValueError:
+            invalid.append(item)
+    if invalid:
+        raise ValueError(f"skip_result_statuses 存在无效状态: {', '.join(invalid)}")
+
     files = cfg.get("files") or {}
     for key in ("input_txt", "output_excel", "log_file"):
         if not isinstance(files.get(key), str) or not files.get(key):
             raise ValueError(f"files.{key} 不能为空")
+
+    log_cfg = cfg.get("log") or {}
+    lvl = log_cfg.get("level") or "INFO"
+    if not isinstance(lvl, str) or lvl.upper() not in ("DEBUG", "INFO", "WARN", "ERROR"):
+        raise ValueError("log.level 必须为 DEBUG/INFO/WARN/ERROR 之一")
 
 
 def load_config(path: str) -> Dict[str, Any]:
@@ -91,6 +112,15 @@ def load_config(path: str) -> Dict[str, Any]:
             "base_delay_ms": 500,
             "max_delay_ms": 10000,
             "jitter": 0.2,
+            "skip_result_statuses": [
+                Status.SUCCESS.value,
+                Status.NOT_FOUND_CONTRACT.value,
+                Status.NO_COOPERATION.value,
+                Status.NO_CHAT_GROUP.value,
+            ],
+        },
+        "log": {
+            "level": "DEBUG",
         },
     }
 

@@ -41,3 +41,9 @@ retry:
   max_delay_ms: 10000
   # 抖动比例（0~1，用于避免雪崩效应）
   jitter: 0.2
+  # 结果状态白名单：若历史 Excel 中合同状态属于该列表，则本次运行跳过重跑
+  skip_result_statuses:
+    - SUCCESS
+    - NOT_FOUND_CONTRACT
+    - NO_COOPERATION
+    - NO_CHAT_GROUP
